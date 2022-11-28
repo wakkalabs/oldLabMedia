@@ -1,0 +1,9 @@
+gitcarter.org       IN  SOA dns.gitcarter.org. austin@gitcarter.org 20221128 7200 3600 1209600 3600
+#
+dns.gitcarter.org. IN A 192.168.60.2
+edgefw.gitcarter.org. IN A 192.168.60.1
+ac-mbp.gitcarter.org. IN A 192.168.60.3
+rocky.gitcarter.org. IN A 192.168.60.10
+debbie.gitcarter.org IN A 192.168.60.15
+plex.gitcarter.org. IN CNAME rocky.gitcarter.org
+micro.gitcarter.org. IN CAME  debbie.gitcarter.org
