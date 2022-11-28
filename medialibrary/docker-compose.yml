@@ -1,0 +1,245 @@
+version: "3.7"
+
+services:
+  autoscan:
+    container_name: autoscan
+    image: cr.hotio.dev/hotio/autoscan
+    ports:
+      - "3030:3030"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+      - PLEX_LOGIN=awakka
+      - PLEX_PASSWORD=bKKb4552
+    volumes:
+      - /opt/docker/appdata/autoscan:/config
+
+  bazarr:
+    container_name: bazarr
+    image: cr.hotio.dev/hotio/bazarr
+    ports:
+      - "6767:6767"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/bazaar:/config
+
+
+  doplarr:
+    container_name: doplarr
+    image: cr.hotio.dev/hotio/doplarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/doplarr:/config
+
+  lidarr:
+    container_name: lidarr
+    image: cr.hotio.dev/hotio/lidarr
+    ports:
+      - "8686:8686"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/lidarr:/config
+
+  nzbhydra2:
+    container_name: nzbhydra2
+    image: cr.hotio.dev/hotio/nzbhydra2
+    ports:
+      - "5076:5076"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/nzbhydra2:/config
+
+  overseerr:
+    container_name: overseerr
+    image: cr.hotio.dev/hotio/overseerr
+    ports:
+      - "5055:5055"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/overseer:/config
+
+  prowlarr:
+    container_name: prowlarr
+    image: cr.hotio.dev/hotio/prowlarr:testing
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/prowlarr:/config
+
+#  qbitmanage:
+#    image: cr.hotio.dev/hotio/qbitmanage:relase
+#    environment:
+#      - PUID=1000
+#      - PGID=1000
+#      - UMASK=002
+#      - TZ=Etc/UTC
+#      - QBT_RUN=false
+#      - QBT_SCHEDULE=30
+#      - QBT_CONFIG=config.yml
+#      - QBT_LOGFILE=activity.log
+#      - QBT_CROSS_SEED=false
+#      - QBT_RECHECK=false
+#      - QBT_CAT_UPDATE=false
+#      - QBT_TAG_UPDATE=false
+#      - QBT_REM_UNREGISTERED=false
+#      - QBT_REM_ORPHANED=false
+#      - QBT_TAG_NOHARDLINKS=false
+#      - QBT_SKIP_CLEANUP=false
+#      - QBT_DRY_RUN=false
+#      - QBT_LOG_LEVEL=INFO
+#      - QBT_DIVIDER==
+#      - QBT_WIDTH=100
+#    restart: unless-stopped
+#    volumes:
+#      - /opt/docker/appdata/qbitmanage:/config
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - WEBUI_PORT=8080
+    volumes:
+     - /opt/docker/appdata/qbittorrent:/config
+     - /mnt/nfs:/data
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+
+
+  radarr:
+    container_name: radarr
+    image: cr.hotio.dev/hotio/radarr
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/radarr:/config
+
+  sonarr:
+    container_name: sonarr
+    image: cr.hotio.dev/hotio/sonarr
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/sonarr:/config
+
+  stash:
+    container_name: stash
+    image: cr.hotio.dev/hotio/stash:release
+    ports:
+      - "9999:9999"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/stash:/config
+
+  trackarr:
+    container_name: trackarr
+    image: cr.hotio.dev/hotio/trackarr:release
+    ports:
+      - "7337:7337"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/trackarr:/config
+
+  unpackerr:
+    container_name: unpackerr
+    image: cr.hotio.dev/hotio/unpackerr:release
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/unpackerr:/config
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Etc/UTC
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+
+  organizr:
+    container_name: organizr
+    hostname: organizr
+    image: organizr/organizr:latest
+    restart: unless-stopped
+    ports:
+       - 80:80
+    volumes:
+       - /opt/docker/appdata/organizr:/config
+    environment:
+       - PUID=1000
+       - PGID=1000
+       - TZ=America/Chicago
+
+  notifiarr:
+   container_name: notifiarr
+   hostname: "ac-notifiarr"
+   image: golift/notifiarr:latest
+   restart: unless-stopped
+   logging:
+     driver: json-file
+   ports:
+     - 5454:5454
+   environment:
+     - TZ=${TZ}
+   volumes:
+     - /opt/docker/appdata/notifiarr:/config
+     - /var/run/utmp:/var/run/utmp          # optional, only needed if you want to count users
+   privileged: true
