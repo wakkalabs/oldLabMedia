@@ -1,9 +1,6 @@
 version: "3.7"
 
-networks:
-  default:
-    external:
-     name: wakka_bridge_net
+
 
 services:
   autoscan:
@@ -110,32 +107,32 @@ services:
       - /mnt/nfs:/data
     networks:
       - wakka_bridge_net
-#  qbitmanage:
-#    image: cr.hotio.dev/hotio/qbitmanage:relase
-#    environment:
-#      - PUID=1000
-#      - PGID=1000
-#      - UMASK=002
-#      - TZ=Etc/UTC
-#      - QBT_RUN=false
-#      - QBT_SCHEDULE=30
-#      - QBT_CONFIG=config.yml
-#      - QBT_LOGFILE=activity.log
-#      - QBT_CROSS_SEED=false
-#      - QBT_RECHECK=false
-#      - QBT_CAT_UPDATE=false
-#      - QBT_TAG_UPDATE=false
-#      - QBT_REM_UNREGISTERED=false
-#      - QBT_REM_ORPHANED=false
-#      - QBT_TAG_NOHARDLINKS=false
-#      - QBT_SKIP_CLEANUP=false
-#      - QBT_DRY_RUN=false
-#      - QBT_LOG_LEVEL=INFO
-#      - QBT_DIVIDER==
-#      - QBT_WIDTH=100
-#    restart: unless-stopped
-#    volumes:
-#      - /opt/docker/appdata/qbitmanage:/config
+  qbitmanage:
+    image: cr.hotio.dev/hotio/qbitmanage:relase
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+      - QBT_RUN=false
+      - QBT_SCHEDULE=30
+      - QBT_CONFIG=config.yml
+      - QBT_LOGFILE=activity.log
+      - QBT_CROSS_SEED=false
+      - QBT_RECHECK=false
+      - QBT_CAT_UPDATE=false
+      - QBT_TAG_UPDATE=false
+      - QBT_REM_UNREGISTERED=false
+      - QBT_REM_ORPHANED=false
+      - QBT_TAG_NOHARDLINKS=false
+      - QBT_SKIP_CLEANUP=false
+      - QBT_DRY_RUN=false
+      - QBT_LOG_LEVEL=INFO
+      - QBT_DIVIDER==
+      - QBT_WIDTH=100
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/appdata/qbitmanage:/config
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -290,3 +287,8 @@ services:
       - /opt/docker/appdata/recyclarr:/config
     environment:
       - TZ=America/Chicago
+
+networks:
+  default:
+    external:
+     name: wakka_bridge_net
