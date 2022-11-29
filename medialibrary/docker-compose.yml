@@ -1,5 +1,10 @@
 version: "3.7"
 
+networks:
+  default:
+    external:
+     name: wakka_bridge_net
+
 services:
   autoscan:
     container_name: autoscan
@@ -16,6 +21,8 @@ services:
     volumes:
       - /opt/docker/appdata/autoscan:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net
   bazarr:
     container_name: bazarr
     image: cr.hotio.dev/hotio/bazarr
@@ -29,6 +36,8 @@ services:
     volumes:
       - /opt/docker/appdata/bazaar:/config
       - /mnt/nfs/media:/data
+    networks:
+      - wakka_bridge_net
 
   doplarr:
     container_name: doplarr
@@ -40,7 +49,8 @@ services:
       - TZ=Etc/UTC
     volumes:
       - /opt/docker/appdata/doplarr:/config
-     
+    networks:
+      - wakka_bridge_net
   lidarr:
     container_name: lidarr
     image: cr.hotio.dev/hotio/lidarr
@@ -54,6 +64,8 @@ services:
     volumes:
       - /opt/docker/appdata/lidarr:/config
       - /mnt/nfs/torrents:/data
+    networks:
+      - wakka_bridge_net    
  # nzbhydra2:
  #   container_name: nzbhydra2
 #    image: cr.hotio.dev/hotio/nzbhydra2
@@ -80,6 +92,8 @@ services:
     volumes:
       - /opt/docker/appdata/overseer:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net
 
   prowlarr:
     container_name: prowlarr
@@ -94,6 +108,8 @@ services:
     volumes:
       - /opt/docker/appdata/prowlarr:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net
 #  qbitmanage:
 #    image: cr.hotio.dev/hotio/qbitmanage:relase
 #    environment:
@@ -137,7 +153,8 @@ services:
       - 6881:6881
       - 6881:6881/udp
     restart: unless-stopped
-
+    networks:
+      - wakka_bridge_net
 
   radarr:
     container_name: radarr
@@ -152,6 +169,8 @@ services:
     volumes:
       - /opt/docker/appdata/radarr:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net
   sonarr:
     container_name: sonarr
     image: cr.hotio.dev/hotio/sonarr:v4
@@ -165,6 +184,8 @@ services:
     volumes:
       - /opt/docker/appdata/sonarr:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net
   stash:
     container_name: stash
     image: cr.hotio.dev/hotio/stash:release
@@ -178,6 +199,8 @@ services:
     volumes:
       - /opt/docker/appdata/stash:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net      
   trackarr:
     container_name: trackarr
     image: cr.hotio.dev/hotio/trackarr:release
@@ -191,6 +214,8 @@ services:
     volumes:
       - /opt/docker/appdata/trackarr:/config
       - /mnt/nfs:/data
+    networks:
+      - wakka_bridge_net      
   unpackerr:
     container_name: unpackerr
     image: cr.hotio.dev/hotio/unpackerr:release
@@ -203,6 +228,8 @@ services:
       - /opt/docker/appdata/unpackerr:/config
       - /mnt/nfs/torrents/complete:/data/complete
       - /mnt/nfs/media:/data/library
+    networks:
+      - wakka_bridge_net
   flaresolverr:
     # DockerHub mirror flaresolverr/flaresolverr:latest
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -215,6 +242,8 @@ services:
     ports:
       - "${PORT:-8191}:8191"
     restart: unless-stopped
+    networks:
+      - wakka_bridge_net
 
   organizr:
     container_name: organizr
@@ -230,6 +259,8 @@ services:
        - PUID=1000
        - PGID=1000
        - TZ=America/Chicago
+    networks:
+       - wakka_bridge_net
 
   notifiarr:
    container_name: notifiarr
@@ -238,6 +269,8 @@ services:
    restart: unless-stopped
    logging:
      driver: json-file
+   networks:
+     - wakka_bridge_net
    ports:
      - 5454:5454
    environment:
@@ -252,7 +285,7 @@ services:
     container_name: recyclarr
     init: true
     user: 1000:1000
-    networks: [recyclarr]
+    networks: [wakka_bridge_net]
     volumes:
       - /opt/docker/appdata/recyclarr:/config
     environment:
