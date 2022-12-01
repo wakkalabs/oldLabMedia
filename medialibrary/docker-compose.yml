@@ -12,7 +12,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
       - PLEX_LOGIN=awakka
       - PLEX_PASSWORD=bKKb4552
     volumes:
@@ -29,7 +29,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/bazaar:/config
       - /mnt/nfs/media:/data
@@ -43,7 +43,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/doplarr:/config
     networks:
@@ -57,7 +57,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/lidarr:/config
       - /mnt/nfs/torrents:/data
@@ -72,7 +72,7 @@ services:
 #      - PUID=1000
 #      - PGID=1000
 #      - UMASK=002
-#      - TZ=Etc/UTC
+#      - TZ=America/Chicago
 #    volumes:
 #      - /opt/docker/appdata/nzbhydra2:/config
 #      - /mnt/nfs:/data
@@ -85,7 +85,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/overseer:/config
       - /mnt/nfs:/data
@@ -101,19 +101,19 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/prowlarr:/config
       - /mnt/nfs:/data
     networks:
       - wakka_bridge_net
   qbitmanage:
-    image: cr.hotio.dev/hotio/qbitmanage:relase
+    image: cr.hotio.dev/hotio/qbitmanage:release
     environment:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
       - QBT_RUN=false
       - QBT_SCHEDULE=30
       - QBT_CONFIG=config.yml
@@ -133,6 +133,7 @@ services:
     restart: unless-stopped
     volumes:
       - /opt/docker/appdata/qbitmanage:/config
+      - /mnt/nfs/torrents:/data
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -162,7 +163,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/radarr:/config
       - /mnt/nfs:/data
@@ -170,14 +171,14 @@ services:
       - wakka_bridge_net
   sonarr:
     container_name: sonarr
-    image: cr.hotio.dev/hotio/sonarr:v4
+    image: cr.hotio.dev/hotio/sonarr:release
     ports:
       - "8989:8989"
     environment:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/sonarr:/config
       - /mnt/nfs:/data
@@ -192,7 +193,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/stash:/config
       - /mnt/nfs:/data
@@ -207,7 +208,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/trackarr:/config
       - /mnt/nfs:/data
@@ -220,7 +221,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/unpackerr:/config
       - /mnt/nfs/torrents/complete:/data/complete
@@ -235,7 +236,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
       - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     ports:
       - "${PORT:-8191}:8191"
     restart: unless-stopped
@@ -285,6 +286,7 @@ services:
     networks: [wakka_bridge_net]
     volumes:
       - /opt/docker/appdata/recyclarr:/config
+      - /mnt/nfs:/data 
     environment:
       - TZ=America/Chicago
 
