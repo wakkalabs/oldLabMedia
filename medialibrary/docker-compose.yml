@@ -1,8 +1,25 @@
-version: "3.7"
-
-
-
+version: "3.9"
 services:
+  swag:
+    image: lscr.io/linuxserver/swag:latest
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - URL=hiveunderground.com
+      - SUBDOMAINS=wildcard
+      - VALIDATION=dns
+      - DNSPLUGIN=cloudflare
+    volumes:
+      - /opt/docker/appdata/swag:/config
+    ports:
+      - 443:443
+      - 80:80
+    restart: unless-stopped
+
   autoscan:
     container_name: autoscan
     image: cr.hotio.dev/hotio/autoscan
@@ -17,9 +34,9 @@ services:
       - PLEX_PASSWORD=bKKb4552
     volumes:
       - /opt/docker/appdata/autoscan:/config
-      - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net
+      - /mnt/nfs/media:/data
+    network_mode: bridge
+
   bazarr:
     container_name: bazarr
     image: cr.hotio.dev/hotio/bazarr
@@ -32,22 +49,10 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/bazaar:/config
-      - /mnt/nfs/media:/data
-    networks:
-      - wakka_bridge_net
+      - /srv:/data
+      - /mnt/nfs:/mnt
+    network_mode: bridge
 
-  doplarr:
-    container_name: doplarr
-    image: cr.hotio.dev/hotio/doplarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=America/Chicago
-    volumes:
-      - /opt/docker/appdata/doplarr:/config
-    networks:
-      - wakka_bridge_net
   lidarr:
     container_name: lidarr
     image: cr.hotio.dev/hotio/lidarr
@@ -60,22 +65,10 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/lidarr:/config
-      - /mnt/nfs/torrents:/data
-    networks:
-      - wakka_bridge_net    
- # nzbhydra2:
- #   container_name: nzbhydra2
-#    image: cr.hotio.dev/hotio/nzbhydra2
-#    ports:
-#      - "5076:5076"
-#    environment:
-#      - PUID=1000
-#      - PGID=1000
-#      - UMASK=002
-#      - TZ=America/Chicago
-#    volumes:
-#      - /opt/docker/appdata/nzbhydra2:/config
-#      - /mnt/nfs:/data
+      - /srv/torrents:/data
+      - /mnt/nfs:/mnt
+    network_mode: bridge
+
   overseerr:
     container_name: overseerr
     image: cr.hotio.dev/hotio/overseerr:latest
@@ -89,74 +82,31 @@ services:
     volumes:
       - /opt/docker/appdata/overseer:/config
       - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net
+      - /srv:/mnt
+    network_mode: bridge
+
 
   prowlarr:
     container_name: prowlarr
-    image: cr.hotio.dev/hotio/prowlarr:testing
+    image: linuxserver/prowlarr:develop
+    # Comment this if vpn is disabled
+        # network_mode: service:vpn # Comment this line if vpn is disabled
     ports:
       - "9696:9696"
     environment:
       - PUID=1000
       - PGID=1000
-      - UMASK=002
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/prowlarr:/config
+      - /srv:/mnt
       - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net
-  qbitmanage:
-    image: cr.hotio.dev/hotio/qbitmanage:release
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=America/Chicago
-      - QBT_RUN=false
-      - QBT_SCHEDULE=30
-      - QBT_CONFIG=config.yml
-      - QBT_LOGFILE=activity.log
-      - QBT_CROSS_SEED=false
-      - QBT_RECHECK=false
-      - QBT_CAT_UPDATE=false
-      - QBT_TAG_UPDATE=false
-      - QBT_REM_UNREGISTERED=false
-      - QBT_REM_ORPHANED=false
-      - QBT_TAG_NOHARDLINKS=false
-      - QBT_SKIP_CLEANUP=false
-      - QBT_DRY_RUN=false
-      - QBT_LOG_LEVEL=INFO
-      - QBT_DIVIDER==
-      - QBT_WIDTH=100
-    restart: unless-stopped
-    volumes:
-      - /opt/docker/appdata/qbitmanage:/config
-      - /mnt/nfs/torrents:/data
+    network_mode: bridge
 
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Chicago
-      - WEBUI_PORT=8080
-    volumes:
-     - /opt/docker/appdata/qbittorrent:/config
-     - /mnt/nfs/torrents:/data
-    ports:
-      - 8080:8080
-      - 6881:6881
-      - 6881:6881/udp
-    restart: unless-stopped
-    networks:
-      - wakka_bridge_net
 
   radarr:
     container_name: radarr
-    image: cr.hotio.dev/hotio/radarr:v4
+    image: cr.hotio.dev/hotio/radarr:release
     ports:
       - "7878:7878"
     environment:
@@ -166,9 +116,10 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/radarr:/config
-      - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net
+      - /srv:/data
+      - /mnt/nfs:/mnt
+    network_mode: bridge
+
   sonarr:
     container_name: sonarr
     image: cr.hotio.dev/hotio/sonarr:release
@@ -181,24 +132,11 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/sonarr:/config
-      - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net
-  stash:
-    container_name: stash
-    image: cr.hotio.dev/hotio/stash:release
-    ports:
-      - "9999:9999"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=America/Chicago
-    volumes:
-      - /opt/docker/appdata/stash:/config
-      - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net      
+      - /srv/media:/data
+      - /mnt/nfs:/mnt
+    network_mode: bridge
+
+
   trackarr:
     container_name: trackarr
     image: cr.hotio.dev/hotio/trackarr:release
@@ -211,9 +149,10 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/trackarr:/config
+      - /srv/:/mnt
       - /mnt/nfs:/data
-    networks:
-      - wakka_bridge_net      
+    network_mode: bridge
+
   unpackerr:
     container_name: unpackerr
     image: cr.hotio.dev/hotio/unpackerr:release
@@ -224,73 +163,123 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/unpackerr:/config
-      - /mnt/nfs/torrents/complete:/data/complete
-      - /mnt/nfs/media:/data/library
-    networks:
-      - wakka_bridge_net
-  flaresolverr:
-    # DockerHub mirror flaresolverr/flaresolverr:latest
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    environment:
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - LOG_HTML=${LOG_HTML:-false}
-      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=America/Chicago
-    ports:
-      - "${PORT:-8191}:8191"
-    restart: unless-stopped
-    networks:
-      - wakka_bridge_net
+      - /srv/media:/mnt
+      - /mnt/nfs:/data
+    network_mode: bridge
 
-  organizr:
-    container_name: organizr
-    hostname: organizr
-    image: organizr/organizr:latest
-    restart: unless-stopped
-    ports:
-       - 80:80
-    volumes:
-       - /opt/docker/appdata/organizr:/config
-       - /mnt/nfs:/data
-    environment:
-       - PUID=1000
-       - PGID=1000
-       - TZ=America/Chicago
-    networks:
-       - wakka_bridge_net
 
-  notifiarr:
-   container_name: notifiarr
-   hostname: "ac-notifiarr"
-   image: golift/notifiarr:latest
-   restart: unless-stopped
-   logging:
-     driver: json-file
-   networks:
-     - wakka_bridge_net
-   ports:
-     - 5454:5454
-   environment:
-     - TZ=${TZ}
-   volumes:
-     - /opt/docker/appdata/notifiarr:/config
-     - /var/run/utmp:/var/run/utmp
-     - /mnt/nfs:/data          # optional, only needed if you want to count users
-   privileged: true
   recyclarr:
     image: ghcr.io/recyclarr/recyclarr:latest
     container_name: recyclarr
     init: true
     user: 1000:1000
-    networks: [wakka_bridge_net]
+    network_mode: bridge
     volumes:
       - /opt/docker/appdata/recyclarr:/config
-      - /mnt/nfs:/data 
+      - /mnt/nfs:/data
     environment:
       - TZ=America/Chicago
 
-networks:
-  default:
-    external:
-     name: wakka_bridge_net
+  wireguard:
+    image: linuxserver/wireguard:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    ports:
+      - "9091:9091/tcp"
+    volumes:
+      - ~/mai/compose-transmission-wireguard/wg0.conf:/config/wg0.conf
+      - /lib/modules:/lib/modules
+    restart: always
+  transmission:
+    image: linuxserver/transmission:latest
+    network_mode: "service:wireguard"
+    depends_on:
+      - wireguard
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TRANSMISSION_WEB_UI=flood-for-transmission
+      - TZ=America\Chicago
+      - TRANSMISSION_WEB_HOME=/transmissionic/
+    env_file:
+      - ./transmission.env
+    volumes:
+      - /opt/docker/appdata/transmission:/config
+      - /srv/torrents/:/downloads
+
+  notifiarr:
+    container_name: notifiarr
+    hostname: "ac-notifiarr"
+    image: golift/notifiarr:latest
+    restart: unless-stopped
+    logging:
+      driver: json-file
+    ports:
+      - 5454:5454
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - /opt/docker/appdata/notifiarr:/config
+      - /var/run/utmp:/var/run/utmp
+      - /srv:/data
+      - /mnt/nfs:/mnt  # optional, only needed if you want to count users
+    privileged: true
+
+  cloudflareddns:
+    container_name: cloudflareddns
+    image: cr.hotio.dev/hotio/cloudflareddns
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+      - INTERVAL=300
+      - DETECTION_MODE=dig-whoami.cloudflare
+      - LOG_LEVEL=3
+      - CF_USER=austin.carter2689@gmail.com
+      - CF_APIKEY=08c863b5b5dbf8b770673450c34aecfcaff36
+      - CF_APITOKEN=egQPZkmYb4HC2C6Ua4wz3GgPT3zW9IdWkAPpdAt_
+      - CF_APITOKEN_ZONE=hiveunderground.com
+      - CF_HOSTS=hiveunderground.com,vouch.hiveunderground.com
+      - CF_ZONES=hiveunderground.com,gitcarter.org
+      - CF_RECORDTYPES=A;A;AAAA
+    volumes:
+      - /opt/docker/appdata/cloudflareddns:/config
+
+  tautulli:
+    container_name: tautulli
+    image: cr.hotio.dev/hotio/tautulli
+    ports:
+      - "8181:8181"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/appdata/tautulli:/config
+      - /mnt/nfs:/data
+      - /srv:/mnt
+
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+     - LOG_LEVEL=${LOG_LEVEL:-info}
+     - LOG_HTML=${LOG_HTML:-false}
+     - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+     - TZ=America/Chicago
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+    ports:
+     - 8191:8191
+    restart: unless-stopped
