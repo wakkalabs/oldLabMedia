@@ -49,8 +49,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/bazaar:/config
-      - /srv:/data
-      - /mnt/nfs:/mnt
+      - /mnt/nfs:/data
     network_mode: bridge
 
   lidarr:
@@ -65,8 +64,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/lidarr:/config
-      - /srv/torrents:/data
-      - /mnt/nfs:/mnt
+      - /mnt/nfs:/data
     network_mode: bridge
 
   overseerr:
@@ -82,7 +80,6 @@ services:
     volumes:
       - /opt/docker/appdata/overseer:/config
       - /mnt/nfs:/data
-      - /srv:/mnt
     network_mode: bridge
 
 
@@ -99,7 +96,6 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/prowlarr:/config
-      - /srv:/mnt
       - /mnt/nfs:/data
     network_mode: bridge
 
@@ -116,8 +112,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/radarr:/config
-      - /srv:/data
-      - /mnt/nfs:/mnt
+      - /mnt/nfs:/data
     network_mode: bridge
 
   sonarr:
@@ -132,8 +127,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/sonarr:/config
-      - /srv/media:/data
-      - /mnt/nfs:/mnt
+      - /mnt/nfs:/data
     network_mode: bridge
 
 
@@ -149,7 +143,6 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/trackarr:/config
-      - /srv/:/mnt
       - /mnt/nfs:/data
     network_mode: bridge
 
@@ -163,7 +156,6 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/unpackerr:/config
-      - /srv/media:/mnt
       - /mnt/nfs:/data
     network_mode: bridge
 
@@ -213,7 +205,7 @@ services:
       - ./transmission.env
     volumes:
       - /opt/docker/appdata/transmission:/config
-      - /srv/torrents/:/downloads
+      - /mnt/nfs/torrents/:/downloads
 
   notifiarr:
     container_name: notifiarr
@@ -229,8 +221,7 @@ services:
     volumes:
       - /opt/docker/appdata/notifiarr:/config
       - /var/run/utmp:/var/run/utmp
-      - /srv:/data
-      - /mnt/nfs:/mnt  # optional, only needed if you want to count users
+      # optional, only needed if you want to count users
     privileged: true
 
   cloudflareddns:
@@ -263,12 +254,11 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK=002
-      - TZ=Etc/UTC
+      - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/tautulli:/config
       - /mnt/nfs:/data
-      - /srv:/mnt
-
+    network_mode: bridge
   flaresolverr:
     image: flaresolverr/flaresolverr:latest
     container_name: flaresolverr
@@ -279,7 +269,4 @@ services:
      - TZ=America/Chicago
     ports:
       - "${PORT:-8191}:8191"
-    restart: unless-stopped
-    ports:
-     - 8191:8191
     restart: unless-stopped

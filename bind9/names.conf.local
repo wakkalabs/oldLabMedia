@@ -1,4 +1,0 @@
-    zone "gitcarter.org" { 
-        typer master; 
-        file /etc/bind/zones/db.gitcarter.org";
-    };
