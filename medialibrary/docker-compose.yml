@@ -97,7 +97,7 @@ services:
     volumes:
       - /opt/docker/appdata/prowlarr:/config
       - /mnt/nfs:/data
-    network_mode: bridge
+    network_mode: "service:wireguard"
 
 
   radarr:
@@ -157,7 +157,7 @@ services:
     volumes:
       - /opt/docker/appdata/unpackerr:/config
       - /mnt/nfs:/data
-    network_mode: bridge
+    network_mode: 
 
 
   recyclarr:
@@ -165,7 +165,7 @@ services:
     container_name: recyclarr
     init: true
     user: 1000:1000
-    network_mode: bridge
+    network_mode: "service:wireguard"
     volumes:
       - /opt/docker/appdata/recyclarr:/config
       - /mnt/nfs:/data
@@ -187,8 +187,8 @@ services:
     ports:
       - "9091:9091/tcp"
     volumes:
-      - ~/mai/compose-transmission-wireguard/wg0.conf:/config/wg0.conf
-      - /lib/modules:/lib/modules
+      - /opt/docker/appdata/wireguard/wg0.conf:/config/wg0.conf
+      - /usr/lib/:/lib/modules
     restart: always
   transmission:
     image: linuxserver/transmission:latest
