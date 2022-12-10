@@ -87,7 +87,6 @@ services:
     container_name: prowlarr
     image: linuxserver/prowlarr:develop
     # Comment this if vpn is disabled
-        # network_mode: service:vpn # Comment this line if vpn is disabled
     ports:
       - "9696:9696"
     environment:
@@ -97,14 +96,14 @@ services:
     volumes:
       - /opt/docker/appdata/prowlarr:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
-
+    network_mode: bridge
 
   radarr:
     container_name: radarr
     image: cr.hotio.dev/hotio/radarr:release
     ports:
-      - "7878:7878"
+
+         - "7878:7878"
     environment:
       - PUID=1000
       - PGID=1000
@@ -118,8 +117,8 @@ services:
   sonarr:
     container_name: sonarr
     image: cr.hotio.dev/hotio/sonarr:release
-    ports:
-      - "8989:8989"
+      #  ports:
+      # - "8989:8989"
     environment:
       - PUID=1000
       - PGID=1000
@@ -143,8 +142,6 @@ services:
       - TZ=America/Chicago
     volumes:
       - /opt/docker/appdata/trackarr:/config
-      - /mnt/nfs:/data
-    network_mode: bridge
 
   unpackerr:
     container_name: unpackerr
@@ -157,7 +154,7 @@ services:
     volumes:
       - /opt/docker/appdata/unpackerr:/config
       - /mnt/nfs:/data
-    network_mode: 
+    network_mode: bridge
 
 
   recyclarr:
@@ -171,58 +168,6 @@ services:
       - /mnt/nfs:/data
     environment:
       - TZ=America/Chicago
-
-  wireguard:
-    image: linuxserver/wireguard:latest
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv4.conf.all.src_valid_mark=1
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Chicago
-    ports:
-      - "9091:9091/tcp"
-    volumes:
-      - /opt/docker/appdata/wireguard/wg0.conf:/config/wg0.conf
-      - /usr/lib/:/lib/modules
-    restart: always
-  transmission:
-    image: linuxserver/transmission:latest
-    network_mode: "service:wireguard"
-    depends_on:
-      - wireguard
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TRANSMISSION_WEB_UI=flood-for-transmission
-      - TZ=America\Chicago
-      - TRANSMISSION_WEB_HOME=/transmissionic/
-    env_file:
-      - ./transmission.env
-    volumes:
-      - /opt/docker/appdata/transmission:/config
-      - /mnt/nfs/torrents/:/downloads
-
-  notifiarr:
-    container_name: notifiarr
-    hostname: "ac-notifiarr"
-    image: golift/notifiarr:latest
-    restart: unless-stopped
-    logging:
-      driver: json-file
-    ports:
-      - 5454:5454
-    environment:
-      - TZ=America/Chicago
-    volumes:
-      - /opt/docker/appdata/notifiarr:/config
-      - /var/run/utmp:/var/run/utmp
-      # optional, only needed if you want to count users
-    privileged: true
 
   cloudflareddns:
     container_name: cloudflareddns
@@ -270,3 +215,94 @@ services:
     ports:
       - "${PORT:-8191}:8191"
     restart: unless-stopped
+  transmission:
+    image: linuxserver/transmission:latest
+    network_mode: "service:wireguard"
+    depends_on:
+      - wireguard
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TRANSMISSION_WEB_UI=flood-for-transmission
+      - TZ=America\Chicago
+      - TRANSMISSION_WEB_HOME=/transmissionic/
+    env_file:
+      - ./.env
+    volumes:
+      - /opt/docker/appdata/transmission:/config
+      - /mnt/nfs/torrents/:/downloads
+
+  notifiarr:
+    container_name: notifiarr
+    hostname: "ac-notifiarr"
+    image: golift/notifiarr:latest
+    restart: unless-stopped
+    logging:
+      driver: json-file
+    ports:
+      - 5454:5454
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - /opt/docker/appdata/notifiarr:/config
+      - /var/run/utmp:/var/run/utmp
+      # optional, only needed if you want to count users
+    privileged: true
+  smokeping:
+    image: lscr.io/linuxserver/smokeping:latest
+    container_name: smokeping
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /opt/docker/appdata/smokeping:/config
+      - /opt/docker/appdata/smokeping/data:/data
+    ports:
+      - 8001:8001
+    restart: unless-stopped
+
+  sickchill:
+    container_name: sickchill
+    image: sickchill/sickchill
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Chicago/America
+      - USERDIR=/home/acarter/sickchill
+      - SHOWS_AND_DOWNLOADS_ROOT=/mnt/nfs/torrents
+    volumes:
+      - $USERDIR/sickchill:/config
+      - $USERDIR/sickchill:/data
+      - $SHOWS_AND_DOWNLOADS_ROOT:$SHOWS_AND_DOWNLOADS_ROOT
+    ports:
+      - 8081:8081
+    network_mode: host
+    restart: unless-stopped
+
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    hostname: netdata # set to fqdn of host
+    ports:
+      - 19999:19999
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /opt/docker/appdata/netdata/config:/etc/netdata
+      - /opt/docker/appdata/netdata:/var/lib/netdata
+      - /home/acarter/cache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
+
