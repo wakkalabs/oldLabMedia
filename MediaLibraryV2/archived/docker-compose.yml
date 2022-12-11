@@ -103,7 +103,7 @@ services:
     image: linuxserver/prowlarr:develop
     # Comment this if vpn is disabled
     ports:
-      - "9696:9696"
+      - 9696:9696
     environment:
       - PUID=1000
       - PGID=1000
@@ -245,3 +245,4 @@ services:
       # optional, only needed if you want to count users
     privileged: true
     network_mode: bridge
+
