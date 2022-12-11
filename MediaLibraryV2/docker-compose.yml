@@ -220,7 +220,8 @@ services:
     restart: unless-stopped
     logging:
       driver: json-file
-    ports:
+    # Create the network
+    # Create a network called "my_network" with the driver "bridge" and subnet 
       - 5454:5454
     environment:
       - TZ=America/Chicago
