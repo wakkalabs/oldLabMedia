@@ -25,11 +25,10 @@ services:
       - 51194/udp
     volumes:
       - /lib/modules:/lib/modules:rw
-      - ./config:/config:rw
+      - ./config:/config
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
     restart: unless-stopped
-    privileged: true
 
 
   autoscan:
@@ -53,6 +52,8 @@ services:
   overseerr:
     container_name: overseerr
     image: cr.hotio.dev/hotio/overseerr:latest
+    ports:
+      - "5055:5055"
     environment:
       - PUID=1000
       - PGID=1000
@@ -84,6 +85,8 @@ services:
   lidarr:
     container_name: lidarr
     image: cr.hotio.dev/hotio/lidarr
+    ports:
+      - "8686:8686"
     environment:
       - PUID=1000
       - PGID=1000
@@ -92,12 +95,15 @@ services:
     volumes:
       - /opt/docker/appdata/lidarr:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
+    networks:
+      - wireguard
 
   prowlarr:
     container_name: prowlarr
     image: linuxserver/prowlarr:develop
     # Comment this if vpn is disabled
+    ports:
+      - "9696:9696"
     environment:
       - PUID=1000
       - PGID=1000
@@ -105,11 +111,14 @@ services:
     volumes:
       - /opt/docker/appdata/prowlarr:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
+    networks:
+      - wireguard
 
   radarr:
     container_name: radarr
     image: cr.hotio.dev/hotio/radarr:release
+    ports:
+      - "7878:7878"
     environment:
       - PUID=1000
       - PGID=1000
@@ -118,11 +127,13 @@ services:
     volumes:
       - /opt/docker/appdata/radarr:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
-
+    networks:
+      - wireguard
   sonarr:
     container_name: sonarr
     image: cr.hotio.dev/hotio/sonarr:release
+    ports:
+      - "8989:8989"
     environment:
       - PUID=1000
       - PGID=1000
@@ -131,11 +142,13 @@ services:
     volumes:
       - /opt/docker/appdata/sonarr:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
-
+    networks:
+      - wireguard
   bazarr:
     container_name: bazarr
     image: cr.hotio.dev/hotio/bazarr
+    ports:
+      - "6767:6767"
     environment:
       - PUID=1000
       - PGID=1000
@@ -144,8 +157,8 @@ services:
     volumes:
       - /opt/docker/appdata/bazaar:/config
       - /mnt/nfs:/data
-    network_mode: "service:wireguard"
-
+    networks:
+      - wireguard
   unpackerr:
     container_name: unpackerr
     image: cr.hotio.dev/hotio/unpackerr:release
@@ -195,12 +208,14 @@ services:
      - LOG_HTML=${LOG_HTML:-false}
      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
      - TZ=America/Chicago
-    network_mode: "service:wireguard"
+    networks:
+     - wireguard
     restart: unless-stopped
 
   transmission:
     image: linuxserver/transmission:latest
-    network_mode: "service:wireguard"
+    networks:
+      - wireguard
     environment:
       - PUID=1000
       - PGID=1000
