@@ -1,0 +1,181 @@
+version: "3.6"
+services:
+  swag:
+    image: lscr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+       - NET_ADMIN
+    env_file:
+       - '.env'
+    environment:
+       - PUID=1000
+       - PGID=1000
+       - TZ=America/Chicago
+       - URL=hiveunderground.com
+       - SUBDOMAINS=wildcard
+       - VALIDATION=dns
+       - DNSPLUGIN=cloudflare
+    volumes:
+       - /opt/docker/swag:/config
+    ports:
+       - 80:80
+       - 443:443
+       - 9983:80
+       - 9443:443
+       - 8384:8384
+       - 22000:22000/tcp
+       - 22000:22000/udp
+       - 21027:21027/udp
+       - 4545:4545
+       - 32400:32400
+       - 1900:1900/udp
+       - 3005:3005
+       - 5353:5353/udp
+       - 8324:8324
+       - 32410:32410/udp
+       - 32412:32412/udp
+       - 32413:32413/udp
+       - 32414:32414/udp
+       - 32469:32469
+       - 8265:8265 # webUI port
+       - 8266:8266 # server port
+       - 8267:8267 # Internal node port
+       - 8268:8268
+    restart: unless-stopped
+  organizr:
+     image: linuxserver/organizr
+     container_name: organizr
+     environment:
+       - PUID=1000
+       - PGID=1000
+       - TZ=America/Chicago
+     volumes:
+       - /opt/docker/organizr:/config
+     restart: unless-stopped
+  tautulli:
+      container_name: tautulli
+      network_mode: service:swag
+      env_file:
+       - ./.env
+      image: cr.hotio.dev/hotio/tautulli
+   environment:
+       - PUID=1000
+       - PGID=1000
+                                                                                                                                                                                                                                                                                                            58,7          Top
+       - PUID=1000
+       - PGID=1000
+       - UMASK=002
+       - TZ=America/Chicago
+      volumes:
+       - /opt/docker/tautulli:/config
+       - /mnt/nfs:/data
+  notifiarr:
+      container_name: notifiarr
+      hostname: "ac-notifiarr"
+      image: golift/notifiarr:latest
+      restart: unless-stopped
+      logging:
+       driver: json-file
+      environment:
+        - TZ=America/Chicago
+      volumes:
+        - /opt/docker/notifiarr:/config
+        - /var/run/utmp:/var/run/utmp
+        # optional, only needed if you want to count users
+      privileged: true
+      network_mode: service:swag
+  requestrr:
+      image: lscr.io/linuxserver/requestrr:latest
+      container_name: requestrr
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=America/Chicago
+      volumes:
+        - /opt/docker/requestrr:/config
+      restart: unless-stopped
+      network_mode: service:swag
+  syncthing:
+      image: lscr.io/linuxserver/syncthing:latest
+      container_name: syncthing
+      hostname: syncthing #optional
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=America/Chicago
+      volumes:
+        - /path/to/appdata/config:/config
+        - /mnt/nfs/media/tv:/data1
+        - /mnt/nfs/media/movies:/data2
+      network_mode: service:swag
+      restart: unless-stopped
+  changedetection:
+      image: lscr.io/linuxserver/changedetection.io:latest
+      container_name: changedetection
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=America/Chicago
+        - BASE_URL= #optional
+      volumes:
+        - /opt/docker/changedetection:/config
+      restart: unless-stopped
+  tdarr:
+      image: ghcr.io/haveagitgat/tdarr:latest
+      container_name: tdarr
+      restart: unless-stopped
+
+  #   Example extra node port
+      environment:
+        - TZ=America/Chicago
+        - PUID=1000
+        - PGID=1000
+        - UMASK_SET=002
+        - serverIP=172.20.0.100
+        - serverPort=8266
+        - webUIPort=8265
+        - internalNode=true
+        - nodeID=MyInternalNode
+      volumes:
+        - /docker/tdarr/server:/app/server
+        - /docker/tdarr/configs:/app/configs
+        - /docker/tdarr/logs:/app/logs
+        - /srv/media:/media
+        - /transcode_cache:/temp
+      network_mode: service:swag
+  tdar-node:
+      container_name: tdarr-node
+      image: ghcr.io/haveagitgat/tdarr_node:latest
+      restart: unless-stopped
+
+      environment:
+        - TZ=America/Chicago
+        - PUID=1000
+        - PGID=1000
+        - UMASK_SET=002
+        - nodeID=MainNode
+        - serverIP=172.20.0.105
+        - serverPort=8266
+      volumes:
+        - /opt/docker/tdarr/configs:/app/configs
+        - /opt/docker/tdarr/logs:/app/logs
+        - /srv/media:/media
+        - /transcode_cache:/temp
+      network_mode: service:swag
+
+
+  plex:
+      image: lscr.io/linuxserver/plex:latest
+      container_name: plex
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - VERSION=latest
+        - PLEX_CLAIM=claim-J1VmSu2avkzoF44geDcA
+      volumes:
+        - /opt/docker/plexconfig:/config
+        - /mnt/nfs/media/tv:/tv
+        - /mnt/nfs/media/movies:/movies
+      devices:
+        - /dev/dri:/dev/dri
+      network_mode: service:swag
