@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  syncthing:
+      image: lscr.io/linuxserver/syncthing:latest
+      container_name: syncthing
+      hostname: syncthing #optional
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=America/Chicago
+      volumes:
+        - /path/to/appdata/config:/config
+        - /mnt/nfs/media/tv:/data1
+        - /mnt/nfs/media/movies:/data
+      restart: unless-stopped
+  changedetection:
+      image: lscr.io/linuxserver/changedetection.io:latest
+      container_name: changedetection
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=America/Chicago
+        - BASE_URL= #optional
+      volumes:
+        - /opt/docker/changedetection:/config
+      restart: unless-stopped
+
+  plex:
+      image: lscr.io/linuxserver/plex:latest
+      container_name: plex
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - VERSION=latest
+        - PLEX_CLAIM=claim-J1VmSu2avkzoF44geDcA
+      volumes:
+        - /opt/docker/plexconfig:/config
+        - /mnt/nfs/media/tv:/tv
+        - /mnt/nfs/media/movies:/movies
+      devices:
+        - /dev/dri:/dev/dri

@@ -1,0 +1,412 @@
+version: "3.6"
+
+networks:
+  media_network:
+    name: media_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: ${DOCKER_SUBNET}
+        gateway: ${DOCKER_GATEWAY}
+services:
+  swag:
+    image: ghcr.io/linuxserver/swag:latest
+    container_name: swag
+    env_file:
+       - '.env'
+    cap_add:
+       - NET_ADMIN
+    environment:
+       - PUID=${PUID}
+       - PGID=${PGID}
+       - TZ=${TIMEZONE}
+       - URL=hiveunderground.com
+       - SUBDOMAINS=wildcard
+       - VALIDATION=dns
+       - DNSPLUGIN=cloudflare
+    volumes:
+       - /opt/docker/swag:/config
+    ports:
+      # - 80:80
+       - 443:443
+       - 9983:80
+         # - 9443:443
+         #  - 8384:8384
+         #  - 22000:22000/tcp
+         #  - 22000:22000/udp
+         #       - 21027:21027/udp
+         #- 4545:4545
+         #  - 3005:3005
+       - 5353:5353/udp
+         #  - 8265:8265 # webUI port
+         #  - 8266:8266 # server port
+         #  - 8267:8267 # Internal node port
+         #- 8268:8268
+         #  - 8686:8686
+         # - 9696:9696
+         # - 9091:9091
+         # - 7878:7878
+         # - 8989:8989
+         # - 6767:6767
+    restart: unless-stopped
+  organizr:
+     image: ghcr.io/organizr/organizr
+     container_name: organizr
+     ports:
+       - 80:80
+     environment:
+       - PUID=${PUID}
+       - PGID=${PGID}
+       - TZ=${TIMEZONE}
+     volumes:
+       - ${FOLDER_FOR_DOCKER}/organizr:/config
+     restart: unless-stopped
+  tautulli:
+      container_name: tautulli
+      ports:
+       - 8181:8181
+      networks:
+       - media_network
+      env_file:
+       - ./.env
+      image: cr.hotio.dev/hotio/tautulli:latest
+      environment:
+       - PUID=${PUID}
+       - PGID=${PGID}
+       - UMASK=${UMASK}
+       - TZ=${TIMEZONE}
+      volumes:
+       - ${FOLDER_FOR_DOCKER}/tautulli:/config
+       - /mnt/nfs:/data
+  notifiarr:
+      container_name: notifiarr
+      hostname: "ac-notifiarr"
+      image: golift/notifiarr:latest
+      restart: unless-stopped
+      ports:
+       - 5656:5656
+      logging:
+       driver: json-file
+      environment:
+       - TZ=America/Chicago
+      volumes:
+       - ${FOLDER_FOR_DOCKER}/notifiarr:/config
+       - /var/run/utmp:/var/run/utmp
+        # optional, only needed if you want to count users
+      privileged: true
+      networks:
+       - media_network
+  requestrr:
+      image: lscr.io/linuxserver/requestrr:latest
+      container_name: requestrr
+      environment:
+       - PUID=${PUID}
+       - PGID=${PGID}
+       - TZ=${TIMEZONE}
+      volumes:
+       - ${FOLDER_FOR_DOCKER}/requestrr:/config
+      restart: unless-stopped
+      networks:
+       - media_network
+
+         #  tdarr:
+         #   image: ghcr.io/haveagitgat/tdarr:latest
+        #    container_name: tdarr
+        #    restart: unless-stopped
+  #   Example extra node port
+  #      environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #       - UMASK_SET=${UMASK}
+  #     - serverIP=172.20.0.60
+  #     - serverPort=8266
+  #     - webUIPort=8265
+  #     - internalNode=true
+         #   - nodeID=MyInternalNode
+         #     volumes:
+         # - ${FOLDER_FOR_DOCKER}/tdarr/server:/app/server
+         #  - ${FOLDER_FOR_DOCKER}/tdarr/configs:/app/configs
+         #   - ${FOLDER_FOR_DOCKER}/tdarr/logs:/app/logs
+         #  - ${FOLDER_FOR_MEDIA}:/media
+         #  - /transcode_cache:/temp
+         # networks:
+         #    - media_network
+         # tdar-node:
+         #   container_name: tdarr-node
+         #  image: ghcr.io/haveagitgat/tdarr_node:latest
+         # restart: unless-stopped
+
+         #  environment:
+         # - TZ=${TIMEZONE}
+         #  - PUID=${PUID}
+         #  - PGID=${PGID}
+         #  - UMASK_SET=${UMASK}
+         #       - nodeID=MainNode
+         #    - serverIP=0.0.0.0
+         #  - serverPort=8266
+         #  volumes:
+         #    - ${FOLDER_FOR_DOCKER}/tdarr_node/configs:/app/configs
+         #  - ${FOLDER_FOR_DOCKER}/tdarr_node/logs:/app/logs
+         #  - ${FOLDER_FOR_MEDIA}:/media
+         # - /transcode_cache:/temp
+         # networks:
+         #  - media_network
+  autoscan:
+     container_name: autoscan
+     image: cr.hotio.dev/hotio/autoscan:latest
+     environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+      - PLEX_LOGIN=awakka
+      - PLEX_PASSWORD=bKKb4552
+     volumes:
+      - ${FOLDER_FOR_DOCKER}/autoscan:/config
+      - ${FOLDER_FOR_MEDIA}:/data
+     ports:
+      - 3030:3030
+     networks:
+      - media_network
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    ports:
+      - 8191:8191
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=${TIMEZONE}
+    networks:
+      - media_network
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    ports:
+      - 8686:8686
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/lidarr:/config
+      - ${FOLDER_FOR_DOCKER}:/data/media
+      - ${FOLDER_FOR_TORRENTS}:/data/torrents
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:lidarr
+      - TP_THEME=${TP_THEME}
+    networks:
+      - media_network
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    ports:
+     - 9696:9696
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    environment:
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:prowlarr
+      - TP_THEME=${TP_THEME}
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/prowlarr:/config
+      - ${FOLDER_FOR_MEDIA}:/data/media
+      - ${FOLDER_FOR_TORRENTS}:/data/torrents
+    networks:
+      - media_network
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    ports:
+      - 7878:7878
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/radarr:/config
+      - ${FOLDER_FOR_MEDIA}:/data/media
+      - ${FOLDER_FOR_TORRENTS}:/data/torrents
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:radarr
+      - TP_THEME=${TP_THEME}
+    networks:
+      - media_network
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    ports:
+      - 8989:8989
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/sonarr:/config
+      - ${FOLDER_FOR_MEDIA}:/data/media
+      - ${FOLDER_FOR_TORRENTS}:/data/torrents
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:sonarr
+      - TP_THEME=${TP_THEME}
+    networks:
+      - media_network
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    networks:
+      - media_network
+    container_name: transmission
+    ports:
+      - 9091:9091
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TRANSMISSION_WEB_UI=flood-for-transmission
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:transmission
+      - TP_THEME=${TP_THEME}
+      - TRANSMISSION_WEB_HOME=/transmissionic/
+    env_file:
+      - ./.env
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/transmission:/config
+      - ${FOLDER_FOR_TORRENTS}:/downloads
+
+
+  unpackerr:
+    image: cr.hotio.dev/hotio/unpackerr:latest
+    container_name: unpackerr
+    networks:
+      - media_network
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/unpackerr:/config
+      - ${FOLDER_FOR_MEDIA}:/data/media
+      - ${FOLDER_FOR_TORRENTS}:/data/torrents
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+      - UN_DEBUG=false
+      - UN_LOG_FILE=
+      - UN_LOG_FILES=10
+      - UN_LOG_FILE_MB=10
+      - UN_INTERVAL=2m
+      - UN_START_DELAY=1m
+      - UN_RETRY_DELAY=5m
+      - UN_MAX_RETRIES=3
+      - UN_PARALLEL=1
+      - UN_FILE_MODE=0644
+      - UN_DIR_MODE=0755
+      # Sonarr Config
+      - UN_SONARR_0_URL=http://sonarr:8989
+      - UN_SONARR_0_API_KEY=
+      - UN_SONARR_0_PATHS_0=/downloads
+      - UN_SONARR_0_PROTOCOLS=torrent
+      - UN_SONARR_0_TIMEOUT=10s
+      - UN_SONARR_0_DELETE_ORIG=false
+      - UN_SONARR_0_DELETE_DELAY=5m
+      # Radarr Config
+      - UN_RADARR_0_URL=http://radarr:7878
+      - UN_RADARR_0_API_KEY=
+      - UN_RADARR_0_PATHS_0=/downloads
+      - UN_RADARR_0_PROTOCOLS=torrent
+      - UN_RADARR_0_TIMEOUT=10s
+      - UN_RADARR_0_DELETE_ORIG=false
+      - UN_RADARR_0_DELETE_DELAY=5m
+      # Lidarr Config
+      - UN_LIDARR_0_URL=http://lidarr:8686
+      - UN_LIDARR_0_API_KEY=
+      - UN_LIDARR_0_PATHS_0=/downloads
+      - UN_LIDARR_0_PROTOCOLS=torrent
+      - UN_LIDARR_0_TIMEOUT=10s
+      - UN_LIDARR_0_DELETE_ORIG=false
+      - UN_LIDARR_0_DELETE_DELAY=5m
+      # Readarr Config
+      # Folder Config
+      - UN_FOLDER_0_PATH=
+      - UN_FOLDER_0_EXTRACT_PATH=
+      - UN_FOLDER_0_DELETE_AFTER=10m
+      - UN_FOLDER_0_DELETE_ORIGINAL=false
+      - UN_FOLDER_0_DELETE_FILES=false
+      - UN_FOLDER_0_MOVE_BACK=false
+      # Webhook Config
+      - UN_WEBHOOK_0_URL=
+      - UN_WEBHOOK_0_NAME=
+      - UN_WEBHOOK_0_NICKNAME=Unpackerr
+      - UN_WEBHOOK_0_CHANNEL=
+      - UN_WEBHOOK_0_TIMEOUT=10s
+      - UN_WEBHOOK_0_SILENT=false
+      - UN_WEBHOOK_0_IGNORE_SSL=false
+      - UN_WEBHOOK_0_EXCLUDE_0=
+      - UN_WEBHOOK_0_EVENTS_0=0
+      - UN_WEBHOOK_0_TEMPLATE_PATH=
+      - UN_WEBHOOK_0_CONTENT_TYPE=application/json
+      # Command Hook Config
+      - UN_CMDHOOK_0_COMMAND=
+      - UN_CMDHOOK_0_NAME=
+      - UN_CMDHOOK_0_TIMEOUT=10s
+      - UN_CMDHOOK_0_SILENT=false
+      - UN_CMDHOOK_0_SHELL=false
+      - UN_CMDHOOK_0_EXCLUDE_0=
+      - UN_CMDHOOK_0_EVENTS_0=0
+
+    security_opt:
+      - no-new-privileges:true
+
+
+  overseerr:
+    container_name: overseerr
+    image: cr.hotio.dev/hotio/overseerr:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/overseer:/config
+      - ${FOLDER_FOR_TORRENTS}:/downloads
+      - ${FOLDER_FOR_MEDIA}:/data
+    networks:
+      - media_network
+    ports:
+      - 5055:5055
+  bazarr:
+    container_name: bazarr
+    image: cr.hotio.dev/hotio/bazarr
+    ports:
+      - 6767:6767
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/bazaar:/config
+      - ${FOLDER_FOR_MEDIA}:/data
+    networks:
+      - media_network
+
+        #  networks:
+        #  media_network:
+        #    external: true
