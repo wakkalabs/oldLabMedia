@@ -1,0 +1,163 @@
+version: "3.6"
+
+networks:
+  media_network:
+    name: media_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: ${DOCKER_SUBNET}
+        gateway: ${DOCKER_GATEWAY}
+services:
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - PUID=1000
+      - PGID=990
+      - TZ=America/Chicago
+    volumes:
+      - /opt/docker/nextdata:/config
+      - /opt/docker/nextcloud:/data
+    ports:
+      - 7443:443
+    restart: unless-stopped
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    ports:
+     - 9696:9696
+    restart: unless-stopped
+    environment:
+     - PUID=${PUID}
+     - PGID=${PGID}
+     - DOCKER_MODS=ghcr.io/gilbn/theme.park:prowlarr
+     - TP_THEME=${TP_THEME}
+    volumes:
+     - ${FOLDER_FOR_DOCKER}/prowlarr:/config
+     - ${FOLDER_FOR_MEDIA}:/downloads
+     - ${FOLDER_FOR_TORRENTS}:/torrents
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/London
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    ports:
+     - 7878:7878
+    volumes:
+     - ${FOLDER_FOR_DOCKER}/radarr:/config
+     - ${FOLDER_FOR_MEDIA}:/data
+     - ${FOLDER_FOR_TORRENTS}:/downloads
+    environment:
+     - PUID=${PUID}
+     - PGID=${PGID}
+     - UMASK=${UMASK}
+     - TZ=${TIMEZONE}
+     - DOCKER_MODS=ghcr.io/gilbn/theme.park:radarr
+     - TP_THEME=${TP_THEME}
+
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    ports:
+     - 8989:8989
+    volumes:
+     - ${FOLDER_FOR_DOCKER}/sonarr:/config
+     - ${FOLDER_FOR_MEDIA}:/data
+     - ${FOLDER_FOR_TORRENTS}:/downloads
+    environment:
+     - PUID=${PUID}
+     - PGID=${PGID}
+     - TZ=${TIMEZONE}
+     - DOCKER_MODS=ghcr.io/gilbn/theme.park:sonarr
+     - TP_THEME=${TP_THEME}
+    restart: unless-stopped
+  overseerr:
+    container_name: overseerr
+    image: cr.hotio.dev/hotio/overseerr:latest
+    restart: unless-stopped
+    environment:
+     - PUID=${PUID}
+     - PGID=${PGID}
+     - UMASK=${UMASK}
+     - TZ=America/Chicago
+    volumes:
+     - ${FOLDER_FOR_DOCKER}/overseerr:/config
+     - ${FOLDER_FOR_TORRENTS}:/downloads
+     - ${FOLDER_FOR_MEDIA}:/data
+    ports:
+     - 5055:5055
+
+  bazarr:
+    container_name: bazarr
+    image: cr.hotio.dev/hotio/bazarr:latest
+    ports:
+     - 6767:6767
+    environment:
+     - PUID=${PUID}
+     - PGID=${PGID}
+     - UMASK=${UMASK}
+     - TZ=${TIMEZONE}
+    volumes:
+     - ${FOLDER_FOR_DOCKER}/bazaar:/config
+     - ${FOLDER_FOR_MEDIA}:/data
+
+
+  searcharr:
+    image: toddrob/searcharr:latest
+    volumes:
+     - /home/acarter/master/telegram/searcharr/data:/app/data
+     - /home/acarter/master/telegram/searcharr/logs:/app/logs
+     - /home/acarter/master/telegram/searcharr/settings.py:/app/settings.py
+    environment:
+      - PUID=${PUID}
+      - GUID=${PGID}
+      - TZ=America/Chicago
+      - UMASK=${UMASK}
+    restart: unless-stopped
+  # network_mode: host
+    command: python3 searcharr.py -v
+
+  recyclarr:
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
+    volumes:
+      - /opt/docker/recyclarr/config:/config
+    environment:
+      - TZ=America/Chicago
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - Recyclarr__Sonarr__Url=http://sonarr:8989
+      - Recyclarr__Radarr__Url=http://radarr:7878
+      - RECYCLARR_CREATE_CONFIG=true
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - WEBUI_PORT=8080
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/qbittorrent:/config
+      - ${FOLDER_FOR_TORRENTS}:/downloadd
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
