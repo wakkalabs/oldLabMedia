@@ -36,8 +36,8 @@ services:
      - TP_THEME=${TP_THEME}
     volumes:
      - ${FOLDER_FOR_DOCKER}/prowlarr:/config
-     - ${FOLDER_FOR_MEDIA}:/downloads
-     - ${FOLDER_FOR_TORRENTS}:/torrents
+     - ${FOLDER_FOR_MEDIA}:/data
+     - ${FOLDER_FOR_TORRENTS}:/downloads
   flaresolverr:
     # DockerHub mirror flaresolverr/flaresolverr:latest
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -153,11 +153,12 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
       - WEBUI_PORT=8080
-    volumes:
-      - ${FOLDER_FOR_DOCKER}/qbittorrent:/config
-      - ${FOLDER_FOR_TORRENTS}:/downloadd
     ports:
       - 8080:8080
       - 6881:6881
       - 6881:6881/udp
     restart: unless-stopped
+    volumes:
+      - ${FOLDER_FOR_DOCKER}/qbittorrent:/config
+      - ${FOLDER_FOR_TORRENTS}:/downloads
+      - ${FOLDER_FOR_MEDIA}:/data

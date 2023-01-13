@@ -1,0 +1,17 @@
+version: '3.9'
+services:
+  searcharr:
+    container_name: searcharr
+    image: toddrob/searcharr:latest
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./settings.py:/app/settings.py
+    environment:
+      - PUID=1000
+      - GUID=1000
+      - TZ=America/Chicago
+      - UMASK=002
+    restart: unless-stopped
+    network_mode: host
+    command: python3 searcharr.py -v
