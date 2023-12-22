@@ -1,0 +1,12 @@
+#for hosts plugin
+192.168.100.1 gateway.wakkalabs.com 
+192.168.100.2 dns.wakkalabs.com
+192.168.100.5 scale.wakkalabs.com
+192.168.100.45 codebox.wakkalabs.com 
+192.168.100.91 services.wakkalabs.com
+192.168.100.183 esxi1.wakkalabs.com
+192.168.100.249 esxi2.wakkalabs.com
+192.168.100.200 vcenter.wakkalabs.com 
+192.168.100.248 draca.wakkalabs.com
+192.168.100.250 dracb.wakkalabs.com
+192.168.100.251 dracc.wakkalabs.com

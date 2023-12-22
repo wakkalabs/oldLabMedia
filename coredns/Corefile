@@ -1,0 +1,9 @@
+. {
+    log
+    errors
+    health
+    reload 30s
+    file /config/wakkalabs.db wakkalabs.com {
+    forward . 1.1.1.1
+    cache 30
+}

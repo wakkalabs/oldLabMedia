@@ -1,0 +1,21 @@
+$ORIGIN wakkalabs.com.
+$TTL 1h
+@       IN  SOA dns.wakkalabs.com. acarter.wakkalabs.com. (
+                          202307100 ; serial
+                          1d        ; refresh
+                          2h        ; retry
+                          4w        ; expire
+                          1h)       ; minimum
+
+dns.wakkalabs.com. IN A 192.168.100.2
+scale.wakkalabs.com. IN A 192.168.100.5
+codebox.wakkalabs.com. IN A 192.168.100.45
+services.wakkalabs.com. IN A 192.168.100.91
+esxi1.wakkalabs.com. IN A 192.168.100.183
+esxi2.wakkalabs.com. IN A 192.168.100.249
+vcenter.wakkalabs.com. IN A 192.168.100.200
+draca.wakkalabs.com. IN A 192.168.100.248
+dracb.wakkalabs.com. IN A 192.168.100.250
+dracc.wakkalabs.com. IN A 192.168.100.251
+#media.wakkalabs.com. IN CNAME services.wakkalabs.com
+#nazgul.wakkalabs.com. IN CNAME dns.wakkalabs.com
